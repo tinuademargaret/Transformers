@@ -1,8 +1,9 @@
-# Basic self attention
-
 import torch
 from torch import nn
 import torch.nn.functional as F
+
+"""
+Basic self attention
 
 x = torch.tensor([])  # (b, t, k)
 
@@ -11,9 +12,10 @@ W = torch.bmm(x, x.transpose(1, 2))  # 1 -> t 2 -> k
 W = F.softmax(W, dim=2)  # i.e applied across dimension 2
 
 y = torch.bmm(W, x)
-
+"""
 
 # Multi head attention
+
 
 class MultiHeadAttention(nn.Module):
 
@@ -27,15 +29,19 @@ class MultiHeadAttention(nn.Module):
         self.to_values = nn.Linear(k, k, bias=False)
         self.unify_heads = nn.Linear(k, k)
 
-    def forward(self, x):
+    def forward(self, x, y=None):
 
         b, t, k = x.size()
         h = self.heads
 
         # create q, k, v of size k x k
         queries = self.to_queries(x)
-        keys = self.to_keys(x)
-        values = self.to_values(x)
+        if y:
+            keys = self.to_keys(y)
+            values = self.to_values(y)
+        else:
+            keys = self.to_keys(x)
+            values = self.to_values(x)
 
         # Split weights q, k, v to chunks of size s for h heads
         s = k // h  # size of each chunk, where a chunk belongs to a head
@@ -48,7 +54,7 @@ class MultiHeadAttention(nn.Module):
         keys = keys.transpose(1, 2).contigous().view(b * h, t, s)
         values = values.transpose(1, 2).contigous().view(b * h, t, s)
 
-        W = torch.bmm(queries, keys.transpose(1,2))
+        W = torch.bmm(queries, keys.transpose(1, 2))
 
         # scale the dot product
         W = W / k**(1/2)
