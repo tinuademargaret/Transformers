@@ -23,17 +23,18 @@ class Decoder(nn.Module):
             transformerBlock = TransformerDecoderBlock(k, heads)
             self.transformerBlocks.append(transformerBlock)
 
-        self.transformerBlocks = nn.Sequential(*self.transformerBlocks)
+        # self.transformerBlocks = nn.Sequential(*self.transformerBlocks)
 
     def forward(self, x, encoderOutputs):
 
         tokens = self.tokenEmbeddings(x)
         b, t, k = tokens.size()
-        positions = self.positionEmbeddings(
-            torch.arange(t)[None, :, :].expand(b, t, k))
+        positions = torch.arange(t)
+        positions = self.positionEmbeddings(positions)[None, :, :].expand(b, t, k)
 
         decoderInputs = tokens + positions
 
-        decoderOutputs = self.transformerBlocks(decoderInputs, encoderOutputs)
+        for transformerBlock in self.transformerBlocks:
+            decoderInputs = transformerBlock(decoderInputs, encoderOutputs)
 
-        return decoderOutputs
+        return decoderInputs

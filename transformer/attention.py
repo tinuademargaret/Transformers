@@ -36,7 +36,7 @@ class MultiHeadAttention(nn.Module):
 
         # create q, k, v of size k x k
         queries = self.to_queries(x)
-        if y:
+        if y is not None:
             keys = self.to_keys(y)
             values = self.to_values(y)
         else:
@@ -50,9 +50,9 @@ class MultiHeadAttention(nn.Module):
         values = values.view(b, t, h, s)
 
         # Fold h into b so that we can use torch.bmm
-        queries = queries.transpose(1, 2).contigous().view(b * h, t, s)
-        keys = keys.transpose(1, 2).contigous().view(b * h, t, s)
-        values = values.transpose(1, 2).contigous().view(b * h, t, s)
+        queries = queries.transpose(1, 2).contiguous().view(b * h, t, s)
+        keys = keys.transpose(1, 2).contiguous().view(b * h, t, s)
+        values = values.transpose(1, 2).contiguous().view(b * h, t, s)
 
         W = torch.bmm(queries, keys.transpose(1, 2))
 

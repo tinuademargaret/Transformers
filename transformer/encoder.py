@@ -28,8 +28,9 @@ class Encoder(nn.Module):
 
         tokens = self.tokenEmbeddings(x)
         b, t, k = tokens.size()
-        positions = self.positionEmbeddings(
-            torch.arange(t)[None, :, :].expand(b, t, k))
+        print(b, t, k)
+        positions = torch.arange(t)
+        positions = self.positionEmbeddings(positions)[None, :, :].expand(b, t, k)
 
         encoderInputs = tokens + positions
 
